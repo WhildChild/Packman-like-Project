@@ -1,11 +1,7 @@
 using UnityEngine.AI;
 
-namespace Client {
-    struct MovableComponent
-    {
-        public float Speed;
-        public bool IsMoving;
-
-        public NavMeshAgent _navMeshAgent;
-    }
+struct MovableComponent
+{
+    public NavMeshAgent NavMeshAgent;
+    public float Speed;
 }

@@ -4,4 +4,6 @@ public class PlayerSettings : ScriptableObject
 {
     public GameObject Prefab;
     public Vector3 SpawnPosition;
+
+    public float MoveSpeed;
 }

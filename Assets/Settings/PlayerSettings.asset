@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1324ead21a0847f428a0f8b028a50863, type: 3}
   m_Name: PlayerSettings
   m_EditorClassIdentifier: 
-  Prefab: {fileID: 0}
-  SpawnPosition: {x: 0, y: 0, z: 0}
+  Prefab: {fileID: 8374034256543915195, guid: b209e6f973943f14185334053890de9a, type: 3}
+  SpawnPosition: {x: 0.5, y: 0, z: 0.5}
+  MoveSpeed: 2

@@ -5,15 +5,15 @@ using UnityEditor.AI;
 using System.Collections.Generic;
 using System.Linq;
 
-sealed class MazeGenerateSystem : IEcsInitSystem {
+sealed class MazeGenerateSystem : IEcsInitSystem 
+{
 
-    private readonly EcsWorld _world = null;
-    private readonly EcsCustomInject<MazeSettings> _gameBoardSettings = default;
+    private readonly EcsCustomInject<MazeSettings> _mazeSettings = default;
     public void Init (IEcsSystems systems) 
     {
         var gameBoard = new GameObject("GameBoard");
 
-        Cell[,] cells = new Cell[_gameBoardSettings.Value.Width, _gameBoardSettings.Value.Height];
+        Cell[,] cells = new Cell[_mazeSettings.Value.Width, _mazeSettings.Value.Height];
         List<GameObject> walls = new List<GameObject>();
         //—павн €чеек
         for (int x = 0; x < cells.GetLength(0); x++)
@@ -27,9 +27,9 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
                 cell.BottomWall = SpawnBottomWall(cell.GameObject.transform);
 
                 if (x != 0) walls.Add(cell.LeftWall);
-                if (x != 9) walls.Add(cell.RightWall);
+                if (x != _mazeSettings.Value.Width-1) walls.Add(cell.RightWall);
                 if (y != 0) walls.Add(cell.BottomWall);
-                if (y != 9) walls.Add(cell.TopWall);
+                if (y != _mazeSettings.Value.Height-1) walls.Add(cell.TopWall);
 
                 cells[x,y] = cell; 
             }
@@ -37,8 +37,8 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
 
         RemoveWallsWithBacktracker(cells);
 
-        
-        RemoveRandomWalls(walls.Where(x=>x.activeSelf).ToList());
+        RemoveRandomWalls(walls.Where(x => x.activeSelf).ToList());
+        DestroyInactiveWalls(walls.Where(x=> !x.activeSelf).ToList());
         
         NavMeshBuilder.BuildNavMesh();
     }
@@ -64,11 +64,11 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
             {
                 unvisitedNeighbours.Add(cells[x, y-1]);
             }
-            if (x < _gameBoardSettings.Value.Width - 1 && !cells[x + 1, y].IsVisited)
+            if (x < _mazeSettings.Value.Width - 1 && !cells[x + 1, y].IsVisited)
             {
                 unvisitedNeighbours.Add(cells[x + 1, y]);
             }
-            if (y < _gameBoardSettings.Value.Height - 1 && !cells[x , y + 1].IsVisited)
+            if (y < _mazeSettings.Value.Height - 1 && !cells[x , y + 1].IsVisited)
             {
                 unvisitedNeighbours.Add(cells[x , y + 1]);
             }
@@ -76,7 +76,7 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
             if (unvisitedNeighbours.Count > 0)
             {
                 Cell chosen = unvisitedNeighbours[Random.Range(0, unvisitedNeighbours.Count)];
-                RemoveWall(current, chosen);
+                RemoveWallsBetweenCells(current, chosen);
                 chosen.IsVisited = true;
                 current = chosen;
                 stack.Push(chosen);
@@ -91,11 +91,19 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
 
     private void RemoveRandomWalls(List<GameObject> walls)   
     {
-        while (walls.Count > _gameBoardSettings.Value.WallsCount)        
+        while (walls.Count > _mazeSettings.Value.WallsCount)        
         {
             var randomIndex = Random.Range(0, walls.Count);
             walls[randomIndex].SetActive(false);
             walls.RemoveAt(randomIndex);
+        }
+    }
+    
+    private void DestroyInactiveWalls(List<GameObject> walls)
+    {
+        foreach (var wall in walls)
+        {
+            GameObject.Destroy(wall);
         }
     }
 
@@ -106,15 +114,15 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
         Cell cell = new Cell() { x = x, y = y };
         cell.GameObject = new GameObject("Cell"); 
         cell.GameObject.transform.parent = parent;
-        GameObject.Instantiate(_gameBoardSettings.Value.GroundPrefab, cell.GameObject.transform);
+        GameObject.Instantiate(_mazeSettings.Value.GroundPrefab, cell.GameObject.transform);
 
-        cell.GameObject.transform.localPosition = new Vector3(x + _gameBoardSettings.Value.CellSize, 0, y + _gameBoardSettings.Value.CellSize);
+        cell.GameObject.transform.localPosition = new Vector3(x + _mazeSettings.Value.CellSize, 0, y + _mazeSettings.Value.CellSize);
         return cell;
     }
     private GameObject SpawnWall(float x, float y, Transform parent, bool isHorizontal)
     {
-        var wall = GameObject.Instantiate(_gameBoardSettings.Value.WallPrefab, parent.transform);
-        wall.transform.localPosition = new Vector3(x,_gameBoardSettings.Value.CellSize, y);
+        var wall = GameObject.Instantiate(_mazeSettings.Value.WallPrefab, parent.transform);
+        wall.transform.localPosition = new Vector3(x,_mazeSettings.Value.CellSize, y);
         if (isHorizontal)
         {
             wall.transform.localEulerAngles = new Vector3(0, 90, 0);
@@ -124,22 +132,22 @@ sealed class MazeGenerateSystem : IEcsInitSystem {
 
     private GameObject SpawnLeftWall(Transform parent)
     {
-        return SpawnWall(-_gameBoardSettings.Value.CellSize,0, parent, false);
+        return SpawnWall(-_mazeSettings.Value.CellSize,0, parent, false);
     }
     private GameObject SpawnRightWall(Transform parent)
     {
-        return SpawnWall(_gameBoardSettings.Value.CellSize, 0, parent, false);
+        return SpawnWall(_mazeSettings.Value.CellSize, 0, parent, false);
     }
     private GameObject SpawnTopWall(Transform parent)
     {
-        return SpawnWall(0, _gameBoardSettings.Value.CellSize, parent, true);
+        return SpawnWall(0, _mazeSettings.Value.CellSize, parent, true);
     }
     private GameObject SpawnBottomWall(Transform parent)
     {
-        return SpawnWall(0, -_gameBoardSettings.Value.CellSize, parent, true);
+        return SpawnWall(0, -_mazeSettings.Value.CellSize, parent, true);
     }
 
-    private void RemoveWall(Cell current, Cell chosen)
+    private void RemoveWallsBetweenCells(Cell current, Cell chosen)
     {
         if (current.x == chosen.x)
         {
