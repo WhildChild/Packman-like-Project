@@ -5,9 +5,8 @@ using UnityEngine;
 public class ECSStarter : MonoBehaviour
 {
     private IEcsSystems _updateSystems;
-    private IEcsSystems _fixedUpdateSystems;
-    private IEcsSystems _lateUpdateSystems;
     private IEcsSystems _initSystems;
+    private IEcsSystems _fixedUpdateSystems;
     private DIContainer _dIContainer;
 
     private EcsWorld _world;
@@ -15,44 +14,28 @@ public class ECSStarter : MonoBehaviour
     void Start()
     {
         _dIContainer = GetComponent<DIContainer>();
-         _world = new EcsWorld();
+        _world = new EcsWorld();
 
         _initSystems = new EcsSystems(_world);
         _initSystems
-            .Add(new MazeGenerateSystem())
-            .Add(new PlayerSpawnSystem())
-#if UNITY_EDITOR
-            .Add(new Leopotam.EcsLite.UnityEditor.EcsWorldDebugSystem())
-            .Add(new Leopotam.EcsLite.UnityEditor.EcsSystemsDebugSystem("InitOnly"))
-#endif
+            .AddInitOnlySystems()
+            .AddDebugSystems("Init")
             .Inject(_dIContainer.MazeSettings)
             .Inject(_dIContainer.PlayerSettings)
             .Init();
 
         _updateSystems = new EcsSystems(_world);
         _updateSystems
-            .Add(new PlayerInputSystem())
-            .Add(new MoveSystem())
-#if UNITY_EDITOR 
-            .Add(new Leopotam.EcsLite.UnityEditor.EcsSystemsDebugSystem("Update"))
-#endif
-            .Inject()
+            .AddRunSystems()
+            .AddDebugSystems("Run")
+            .Inject(_dIContainer.MazeSettings)
             .Init();
 
         _fixedUpdateSystems = new EcsSystems(_world);
         _fixedUpdateSystems
-#if UNITY_EDITOR
-            .Add(new Leopotam.EcsLite.UnityEditor.EcsSystemsDebugSystem("FixedUpdate"))
-#endif
-            .Inject()
-            .Init();
-
-        _lateUpdateSystems = new EcsSystems(_world);
-        _lateUpdateSystems
-#if UNITY_EDITOR
-            .Add(new Leopotam.EcsLite.UnityEditor.EcsSystemsDebugSystem("LateUpdate"))
-#endif
-            .Inject()
+            .AddFixedUpdateSystems()
+            .AddDebugSystems("FixedUpdate")
+            .Inject(_dIContainer.PeaseSettings)
             .Init();
     }
 
@@ -65,17 +48,14 @@ public class ECSStarter : MonoBehaviour
     {
         _fixedUpdateSystems?.Run();
     }
-    public void LateUpdate()
-    {
-        _lateUpdateSystems?.Run();
-    }
+
+
     private void OnDestroy()
     {
-        _initSystems.Destroy();
-        _updateSystems.Destroy();
-        _fixedUpdateSystems.Destroy();
-        _lateUpdateSystems.Destroy();
+        _initSystems?.Destroy();
+        _updateSystems?.Destroy();
+        _fixedUpdateSystems?.Destroy();
 
-        _world.Destroy();
+        _world?.Destroy();
     }
 }

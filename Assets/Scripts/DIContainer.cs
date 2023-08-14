@@ -6,4 +6,6 @@ public class DIContainer : MonoBehaviour
     public PlayerSettings PlayerSettings;
     [Space]
     public MazeSettings MazeSettings;
+    [Space]
+    public PeaseSettings PeaseSettings;
 }

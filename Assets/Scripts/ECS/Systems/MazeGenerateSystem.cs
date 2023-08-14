@@ -9,43 +9,53 @@ sealed class MazeGenerateSystem : IEcsInitSystem
 {
 
     private readonly EcsCustomInject<MazeSettings> _mazeSettings = default;
+
     public void Init (IEcsSystems systems) 
     {
-        var gameBoard = new GameObject("GameBoard");
+        var world = systems.GetWorld();
+        var mazeEntity = world.NewEntity();
 
-        Cell[,] cells = new Cell[_mazeSettings.Value.Width, _mazeSettings.Value.Height];
+        ref var mazeComponent = ref world.GetPool<MazeComponent>().Add(mazeEntity);
+
+        var maze = new GameObject("Maze");
+
+        mazeComponent.cells = new Cell[_mazeSettings.Value.SideSize, _mazeSettings.Value.SideSize];
         List<GameObject> walls = new List<GameObject>();
         //Спавн ячеек
-        for (int x = 0; x < cells.GetLength(0); x++)
+        for (int x = 0; x < mazeComponent.cells.GetLength(0); x++)
         {
-            for (int y = 0; y < cells.GetLength(1); y++)
+            for (int y = 0; y < mazeComponent.cells.GetLength(1); y++)
             {
-                var cell = SpawnCell(x,y, gameBoard.transform);
+                
+                var cell = SpawnCell(x, y, maze.transform);   
+
                 cell.LeftWall = SpawnLeftWall(cell.GameObject.transform);
                 cell.RightWall = SpawnRightWall(cell.GameObject.transform);
                 cell.TopWall = SpawnTopWall(cell.GameObject.transform);
                 cell.BottomWall = SpawnBottomWall(cell.GameObject.transform);
 
                 if (x != 0) walls.Add(cell.LeftWall);
-                if (x != _mazeSettings.Value.Width-1) walls.Add(cell.RightWall);
+                if (x != _mazeSettings.Value.SideSize -1) walls.Add(cell.RightWall);
                 if (y != 0) walls.Add(cell.BottomWall);
-                if (y != _mazeSettings.Value.Height-1) walls.Add(cell.TopWall);
+                if (y != _mazeSettings.Value.SideSize -1) walls.Add(cell.TopWall);
 
-                cells[x,y] = cell; 
+                mazeComponent.cells[x,y] = cell; 
             }
         }
 
-        RemoveWallsWithBacktracker(cells);
-
+        //Делаем связный лабиринт
+        RemoveWallsWithBacktracker( mazeComponent.cells);
+        //Выключаем рандомные стенки (не считая границ), чтобы кол-во стенок соответствовало параметру
         RemoveRandomWalls(walls.Where(x => x.activeSelf).ToList());
+        //Удаляем все выключенные стенки
         DestroyInactiveWalls(walls.Where(x=> !x.activeSelf).ToList());
         
         NavMeshBuilder.BuildNavMesh();
     }
 
-    private void RemoveWallsWithBacktracker(Cell[,] cells)
+    private void RemoveWallsWithBacktracker( Cell[,] cells)
     {
-        Cell current = cells[0,0];
+        Cell current =  cells[0,0];
         current.IsVisited = true;
 
         Stack<Cell> stack = new Stack<Cell>();
@@ -64,18 +74,18 @@ sealed class MazeGenerateSystem : IEcsInitSystem
             {
                 unvisitedNeighbours.Add(cells[x, y-1]);
             }
-            if (x < _mazeSettings.Value.Width - 1 && !cells[x + 1, y].IsVisited)
+            if (x < _mazeSettings.Value.SideSize - 1 && !cells[x + 1, y].IsVisited)
             {
                 unvisitedNeighbours.Add(cells[x + 1, y]);
             }
-            if (y < _mazeSettings.Value.Height - 1 && !cells[x , y + 1].IsVisited)
+            if (y < _mazeSettings.Value.SideSize - 1 && !cells[x , y + 1].IsVisited)
             {
                 unvisitedNeighbours.Add(cells[x , y + 1]);
             }
 
             if (unvisitedNeighbours.Count > 0)
             {
-                Cell chosen = unvisitedNeighbours[Random.Range(0, unvisitedNeighbours.Count)];
+                Cell chosen =  unvisitedNeighbours[Random.Range(0, unvisitedNeighbours.Count)];
                 RemoveWallsBetweenCells(current, chosen);
                 chosen.IsVisited = true;
                 current = chosen;
@@ -108,11 +118,11 @@ sealed class MazeGenerateSystem : IEcsInitSystem
     }
 
     #region Private Help Methods
-    
+
     private Cell SpawnCell(int x, int y, Transform parent)
     {
-        Cell cell = new Cell() { x = x, y = y };
-        cell.GameObject = new GameObject("Cell"); 
+        var cell = new Cell() { x = x, y = y };
+        cell.GameObject = new GameObject("Cell");
         cell.GameObject.transform.parent = parent;
         GameObject.Instantiate(_mazeSettings.Value.GroundPrefab, cell.GameObject.transform);
 

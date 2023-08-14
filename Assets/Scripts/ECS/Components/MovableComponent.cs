@@ -1,7 +1,7 @@
-using UnityEngine.AI;
+using UnityEngine;
 
 struct MovableComponent
 {
-    public NavMeshAgent NavMeshAgent;
-    public float Speed;
+    public Transform Transform;
+    public Vector2Int cellCoordinates;
 }

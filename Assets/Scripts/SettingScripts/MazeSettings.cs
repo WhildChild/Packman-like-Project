@@ -8,9 +8,7 @@ public class MazeSettings : ScriptableObject
  
     public int WallsCount;
 
-    public int Width;
-    public int Height;
+    public int SideSize = 10;
 
     public float CellSize = 0.5f;
-
 }

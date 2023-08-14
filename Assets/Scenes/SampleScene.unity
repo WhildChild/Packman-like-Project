@@ -360,3 +360,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerSettings: {fileID: 11400000, guid: d68aed9687316cb4392e6d0dfe0f314a, type: 2}
   MazeSettings: {fileID: 11400000, guid: 471d4ec6304463e4ca158dfe4b1c01ed, type: 2}
+  PeaseSettings: {fileID: 11400000, guid: a1157345e1eeb2148a8a23488d581618, type: 2}

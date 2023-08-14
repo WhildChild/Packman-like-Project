@@ -3,7 +3,19 @@ using UnityEngine;
 public class PlayerSettings : ScriptableObject
 {
     public GameObject Prefab;
-    public Vector3 SpawnPosition;
+    [Tooltip("Индексы клетки в двумерном массиве всего поля")]
+    public Vector2Int SpawnPosition;
 
-    public float MoveSpeed;
+    private void OnValidate()
+    {
+        if (SpawnPosition.x < 0)
+        {
+            SpawnPosition.x = 0;
+        }
+
+        if (SpawnPosition.y < 0) 
+        {
+            SpawnPosition.y = 0;
+        }
+    }
 }

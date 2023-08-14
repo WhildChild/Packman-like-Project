@@ -1,10 +1,9 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Cell 
 {
     public GameObject GameObject;
-
-    public int wallsCount = 0;
 
     public int x, y;
 
@@ -14,4 +13,15 @@ public class Cell
     public GameObject BottomWall ;
 
     public bool IsVisited;
+
+    public GameObject Pease;
+
+    public CellStatus CellStatus;   
+}
+public enum CellStatus
+{
+    Empty,
+    HavePlayer,
+    HavePease,
+    HaveEnemy
 }

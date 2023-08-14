@@ -15,6 +15,5 @@ MonoBehaviour:
   GroundPrefab: {fileID: 4971464479286183051, guid: 3a62c747ba33f464d870e16a28cd67b1, type: 3}
   WallPrefab: {fileID: 6512090775483285877, guid: 24de7543a3578784c93d6c9b6e285dbc, type: 3}
   WallsCount: 50
-  Width: 10
-  Height: 10
+  SideSize: 10
   CellSize: 0.5

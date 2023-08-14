@@ -9,8 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1324ead21a0847f428a0f8b028a50863, type: 3}
-  m_Name: PlayerSettings
+  m_Script: {fileID: 11500000, guid: 4dadf03b99b40f04998429864d79d8ba, type: 3}
+  m_Name: PeaseSettings
   m_EditorClassIdentifier: 
-  Prefab: {fileID: 8374034256543915195, guid: b209e6f973943f14185334053890de9a, type: 3}
-  SpawnPosition: {x: 5, y: 0}
+  Prefab: {fileID: 3711513604832041976, guid: 740acce60d9d7f445b4f8721ccbe0c21, type: 3}
+  StartPeaseCount: 0
+  NeedSpawnPerTime: 1
+  SpawnRate: 2
+  PeaseSpawnCountPerTick: 3
